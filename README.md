@@ -40,6 +40,8 @@ Command to login to the K8s cluster from Cloud Shell
 `kubectl scale deployment spring-boot-example --replicas=3`
 
 ## K8s YAML Creator
+Link to Brandon Potter's YML builder - [https://static.brandonpotter.com/kubernetes/DeploymentBuilder.html](https://static.brandonpotter.com/kubernetes/DeploymentBuilder.html)
+
 ### Deployment YML used
 ```
 apiVersion: extensions/v1beta1
