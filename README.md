@@ -88,3 +88,93 @@ spec:
 `kubectl logs <POD_NAME>`
 - Pod Name can be retrived using `kubectl get pods`
 
+## Deployment Strategies
+- Recreate
+- RollingUpdate
+- Blue/Green
+- Canary
+
+### Recreate Strategy
+kube.yml
+```
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spring-boot-example
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: spring-boot-example
+    spec:
+      containers:
+        - name: spring-boot-example
+          image: 'gcr.io/fleet-resolver-237016/spring-boot-example:v1'
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-example
+  labels:
+    name: spring-boot-example
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: spring-boot-example
+  type: LoadBalancer
+```
+
+### Rolling Update Strategy
+kube.yml
+```
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spring-boot-example
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: spring-boot-example
+    spec:
+      containers:
+        - name: spring-boot-example
+          image: 'gcr.io/fleet-resolver-237016/spring-boot-example:v1'
+          ports:
+            - containerPort: 8080
+          readinessProble:
+            httpGet:
+              path: /lazy
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-example
+  labels:
+    name: spring-boot-example
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: spring-boot-example
+  type: LoadBalancer
+```
