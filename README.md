@@ -1,5 +1,28 @@
 # Kubernetes Spring Boot Example in Google Kubernetes Engine (GKE)
 
+Table of Contents
+=================
+
+   * [Create Spring Boot app](#create-spring-boot-app)
+   * [Create Docker image](#create-docker-image)
+   * [Run the Docker image](#run-the-docker-image)
+   * [Login to the K8s Cluster](#login-to-the-k8s-cluster)
+   * [Kubernetes Commands](#kubernetes-commands)
+      * [List Pods](#list-pods)
+      * [List Deployments](#list-deployments)
+      * [List Services](#list-services)
+      * [Deploy an image](#deploy-an-image)
+      * [Expose Load Balancer](#expose-load-balancer)
+      * [Scale deployments](#scale-deployments)
+   * [K8s YAML Creator](#k8s-yaml-creator)
+      * [Deployment YML used](#deployment-yml-used)
+      * [Service YML used](#service-yml-used)
+      * [Commands to Create/Update](#commands-to-createupdate)
+      * [Command to retrieve logs](#command-to-retrieve-logs)
+   * [Deployment Strategies](#deployment-strategies)
+      * [Recreate Strategy](#recreate-strategy)
+      * [Rolling Update Strategy](#rolling-update-strategy)
+         
 ## Create Spring Boot app
 You can use the sample project which I have in here.
 
