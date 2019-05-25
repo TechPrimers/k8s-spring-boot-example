@@ -22,6 +22,8 @@ Table of Contents
    * [Deployment Strategies](#deployment-strategies)
       * [Recreate Strategy](#recreate-strategy)
       * [Rolling Update Strategy](#rolling-update-strategy)
+      * [Blue Green Deployment](#blue-green-deployment)
+         * [Commands](#commands)
          
 ## Create Spring Boot app
 You can use the sample project which I have in here.
@@ -201,3 +203,165 @@ spec:
     app: spring-boot-example
   type: LoadBalancer
 ```
+
+### Blue Green Deployment
+- deployment-blue-v1.yml
+```
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spring-boot-example-v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: spring-boot-example
+        version: "v1"
+    spec:
+      containers:
+        - name: spring-boot-example
+          image: 'gcr.io/fleet-resolver-237016/spring-boot-example:v1'
+          ports:
+            - containerPort: 8080
+          readinessProble:
+            httpGet:
+              path: /lazy
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+```
+- service-blue-v1.yml
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-example
+  labels:
+    name: spring-boot-example
+    version: "v1"
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: spring-boot-example
+    version: "v1"
+  type: LoadBalancer
+```
+
+- deployment-green-v2.yml
+```
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spring-boot-example-v2
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: spring-boot-example
+        version: "v2"
+    spec:
+      containers:
+        - name: spring-boot-example
+          image: 'gcr.io/fleet-resolver-237016/spring-boot-example:v2'
+          ports:
+            - containerPort: 8080
+          readinessProble:
+            httpGet:
+              path: /lazy
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+```
+- service-green-v2.yml
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-example-green
+  labels:
+    name: spring-boot-example-green
+    version: "v2"
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: spring-boot-example
+    version: "v2"
+  type: LoadBalancer
+```
+- deployment-blue-v2.yml
+```
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spring-boot-example-v2
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: spring-boot-example
+        version: "v2"
+    spec:
+      containers:
+        - name: spring-boot-example
+          image: 'gcr.io/fleet-resolver-237016/spring-boot-example:v2'
+          ports:
+            - containerPort: 8080
+          readinessProble:
+            httpGet:
+              path: /lazy
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+```
+- service-blue-v2.yml
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-example
+  labels:
+    name: spring-boot-example
+    version: "v2"
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: spring-boot-example
+    version: "v2"
+  type: LoadBalancer
+```
+
+#### Commands
+- `kubectl apply -f deployment-blue-v1.yml`
+- `kubectl apply -f service-blue-v1.yml`
+- `kubectl apply -f deployment-green-v2.yml`
+- `kubectl apply -f service-green-v2.yml`
+- `kubectl apply -f deployment-blue-v2.yml`
+- `kubectl apply -f service-blue-v2.yml`
+- `kubectl delete deployment.apps/spring-boot-example-v1 service/spring-boot-example-green`
